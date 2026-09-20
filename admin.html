@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - قنوات البث</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090f;
+  --card: #12141f;
+  --border: #21243a;
+  --accent: #ef4444;
+  --accent2: #f97316;
+  --green: #059669;
+  --text: #f8fafc;
+  --dim: #94a3b8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Cairo', sans-serif;
+  background: radial-gradient(ellipse at top, #12141f 0%, #08090f 60%);
+  color: var(--text);
+  min-height: 100vh;
+}
+.login-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; z-index: 100;
+}
+.login-screen.hidden { display: none; }
+.login-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+  border-radius: 16px;
+  padding: 40px 32px;
+  max-width: 420px; width: 100%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.login-icon {
+  width: 80px; height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  box-shadow: 0 0 40px rgba(239,68,68,0.5);
+}
+.login-box h1 { text-align: center; color: #fff; font-size: 1.4rem; margin-bottom: 6px; }
+.login-box .sub { text-align: center; color: var(--dim); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; margin-bottom: 28px; }
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 0.82rem; color: var(--dim); font-weight: 700; margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+}
+.field textarea { resize: vertical; min-height: 70px; }
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239,68,68,0.4); }
+.btn-green { background: linear-gradient(135deg, #059669, #10b981); }
+.btn-gray { background: var(--border); }
+.btn-red { background: #b91c1c; }
+.error-msg {
+  background: rgba(220,38,38,0.15);
+  border: 1px solid #dc2626;
+  color: #fca5a5;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-top: 12px;
+  display: none;
+}
+
+.admin-panel { display: none; }
+.admin-panel.active { display: block; }
+
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { display: flex; align-items: center; gap: 12px; font-weight: 800; color: #fff; }
+.topbar-title .dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); animation: blink 1.2s infinite; }
+@keyframes blink { 50% { opacity: 0.4; } }
+.topbar-user { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--dim); }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+.stat-label { font-size: 0.72rem; color: var(--dim); font-weight: 700; margin-top: 4px; }
+.actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.actions .btn { width: auto; padding: 12px 22px; font-size: 0.88rem; }
+.search-bar {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #fff;
+  font-family: inherit;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+.search-bar:focus { outline: none; border-color: var(--accent); }
+.table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px; }
+th { background: var(--bg); color: var(--dim); text-align: right; padding: 14px; font-weight: 800; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+td { padding: 14px; border-bottom: 1px solid var(--border); color: #fff; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(239,68,68,0.05); }
+.row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-mini {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.btn-edit { color: var(--accent); border-color: var(--accent); }
+.btn-edit:hover { background: var(--accent); color: #fff; }
+.btn-del { color: #dc2626; border-color: #dc2626; }
+.btn-del:hover { background: #dc2626; color: #fff; }
+.ch-logo-mini { width: 40px; height: 40px; border-radius: 8px; object-fit: contain; background: #000; padding: 2px; }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+  border-radius: 16px;
+  max-width: 640px; width: 100%;
+  margin: 20px 0;
+}
+.modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--card); z-index: 2; border-radius: 16px 16px 0 0; }
+.modal-header h2 { font-size: 1.1rem; color: #fff; }
+.close-btn { background: transparent; border: 1px solid var(--border); color: var(--text); width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+.close-btn:hover { background: var(--accent); border-color: var(--accent); }
+.modal-body { padding: 22px; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; }
+
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--green); color: #fff; padding: 14px 24px; border-radius: 10px; font-weight: 700; z-index: 9999; display: none; }
+.toast.error { border-color: #dc2626; }
+.empty-row { text-align: center; padding: 40px; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">📺</div>
+    <h1>لوحة تحكم القنوات</h1>
+    <div class="sub">ADMIN ONLY</div>
+    <div class="field">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="loginEmail" placeholder="admin@example.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn" id="loginBtn">🔓 تسجيل الدخول</button>
+    <div class="error-msg" id="loginError"></div>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <div class="topbar">
+    <div class="topbar-title">
+      <span class="dot"></span>
+      <span>📺 إدارة قنوات البث</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <span class="topbar-user" id="userEmail"></span>
+      <button class="btn btn-red" style="width:auto; padding:8px 16px; font-size:0.82rem;" id="logoutBtn">خروج</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="stats" id="stats"></div>
+
+    <div class="actions">
+      <button class="btn btn-green" id="addBtn">➕ إضافة قناة جديدة</button>
+      <button class="btn btn-gray" id="refreshBtn">🔄 تحديث</button>
+    </div>
+
+    <input type="text" class="search-bar" id="adminSearch" placeholder="🔍 ابحث عن قناة...">
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>الشعار</th>
+            <th>اسم القناة</th>
+            <th>التصنيف</th>
+            <th>رابط البث</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="formModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="formTitle">➕ إضافة قناة جديدة</h2>
+      <button class="close-btn" id="closeFormBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+
+      <div class="form-row">
+        <div class="field">
+          <label>اسم القناة *</label>
+          <input type="text" id="f_name" placeholder="مثال: MBC مصر">
+        </div>
+        <div class="field">
+          <label>التصنيف</label>
+          <input type="text" id="f_category" placeholder="أخبار / رياضة / ترفيه / ديني" list="catList">
+          <datalist id="catList">
+            <option value="أخبار">
+            <option value="رياضة">
+            <option value="ترفيه">
+            <option value="ديني">
+            <option value="أطفال">
+            <option value="وثائقي">
+            <option value="أفلام">
+          </datalist>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>رابط الشعار (من imgbb.com - اختياري)</label>
+        <input type="text" id="f_logo" placeholder="https://i.ibb.co/...">
+      </div>
+
+      <div class="field">
+        <label>رابط البث * (m3u8 / YouTube Live / Twitch)</label>
+        <textarea id="f_url" placeholder="https://example.com/stream.m3u8&#10;أو&#10;https://youtube.com/watch?v=xxxxx"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>الترتيب</label>
+          <input type="number" id="f_order" placeholder="1" value="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>ملاحظات (اختياري)</label>
+        <textarea id="f_notes" placeholder="أي ملاحظات عن القناة..."></textarea>
+      </div>
+
+      <button class="btn btn-green" id="saveBtn" style="margin-top:14px;">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ تم بنجاح</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDM0kNaNhlmqWuzgl8S6ZEKYsIygPblEB0",
+  authDomain: "intelligence-db.firebaseapp.com",
+  projectId: "intelligence-db",
+  storageBucket: "intelligence-db.firebasestorage.app",
+  messagingSenderId: "522063872850",
+  appId: "1:522063872850:web:aea535752f5838a46db08b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let allChannels = [];
+let toastTimer = null;
+const $ = id => document.getElementById(id);
+function value(id) { return $(id)?.value?.trim() || ""; }
+function setValue(id, val = "") { const el = $(id); if (el) el.value = val ?? ""; }
+
+function escapeHTML(v) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function validEmail(e) { return !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function validURL(u) {
+  if (!u) return false;
+  try { const x = new URL(u); return x.protocol === "http:" || x.protocol === "https:"; } catch { return false; }
+}
+function normalize(v) { return String(v ?? "").toLowerCase().trim(); }
+
+function toast(msg, isError = false) {
+  const t = $("toast"); if (!t) return;
+  clearTimeout(toastTimer);
+  t.textContent = msg;
+  t.classList.toggle("error", isError);
+  t.style.display = "block";
+  toastTimer = setTimeout(() => { t.style.display = "none"; }, 3000);
+}
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    $("loginScreen")?.classList.add("hidden");
+    $("adminPanel")?.classList.add("active");
+    if ($("userEmail")) $("userEmail").textContent = user.email || "";
+    await loadChannels();
+  } else {
+    $("loginScreen")?.classList.remove("hidden");
+    $("adminPanel")?.classList.remove("active");
+    allChannels = [];
+    renderStats();
+    renderTable();
+  }
+});
+
+async function doLogin() {
+  const email = value("loginEmail");
+  const pass = $("loginPass")?.value || "";
+  const errBox = $("loginError");
+  if (errBox) { errBox.style.display = "none"; errBox.textContent = ""; }
+  if (!email || !pass) {
+    if (errBox) { errBox.textContent = "⚠️ املأ كل الحقول"; errBox.style.display = "block"; }
+    return;
+  }
+  if (!validEmail(email)) {
+    if (errBox) { errBox.textContent = "⚠️ البريد غير صحيح"; errBox.style.display = "block"; }
+    return;
+  }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (error) {
+    console.error(error);
+    let message = "❌ خطأ في تسجيل الدخول";
+    switch (error.code) {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        message = "⚠️ البريد أو كلمة المرور غير صحيحة"; break;
+      case "auth/too-many-requests":
+        message = "⚠️ محاولات كثيرة، حاول لاحقًا"; break;
+    }
+    if (errBox) { errBox.textContent = message; errBox.style.display = "block"; }
+  }
+}
+
+async function doLogout() {
+  if (!confirm("هل تريد تسجيل الخروج؟")) return;
+  await signOut(auth);
+}
+
+async function loadChannels() {
+  if (!auth.currentUser) return;
+  try {
+    const snap = await getDocs(collection(db, "channels"));
+    allChannels = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allChannels.sort((a, b) => (a.order || 0) - (b.order || 0));
+    renderStats();
+    renderTable();
+  } catch (e) {
+    console.error(e);
+    toast("❌ خطأ في تحميل القنوات", true);
+  }
+}
+
+function renderStats() {
+  const cats = new Set(allChannels.map(c => c.category).filter(Boolean));
+  $("stats").innerHTML = `
+    <div class="stat"><div class="stat-value">${allChannels.length}</div><div class="stat-label">إجمالي القنوات</div></div>
+    <div class="stat"><div class="stat-value">${cats.size}</div><div class="stat-label">التصنيفات</div></div>
+  `;
+}
+
+function renderTable() {
+  const q = normalize($("adminSearch")?.value || "");
+  const filtered = allChannels.filter(c =>
+    !q || `${c.name || ''} ${c.category || ''}`.toLowerCase().includes(q)
+  );
+  const body = $("tableBody");
+  if (!filtered.length) {
+    body.innerHTML = `<tr><td colspan="5" class="empty-row">لا توجد قنوات</td></tr>`;
+    return;
+  }
+  body.innerHTML = filtered.map(c => {
+    const logo = c.logo
+      ? `<img class="ch-logo-mini" src="${escapeHTML(c.logo)}" alt="" onerror="this.style.display='none'">`
+      : `<div class="ch-logo-mini" style="display:flex;align-items:center;justify-content:center;">📺</div>`;
+    return `
+      <tr>
+        <td>${logo}</td>
+        <td><strong>${escapeHTML(c.name || '-')}</strong></td>
+        <td>${escapeHTML(c.category || 'عام')}</td>
+        <td><span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--dim); max-width:200px; display:inline-block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle;" title="${escapeHTML(c.url || '')}">${escapeHTML((c.url || '').substring(0, 40))}...</span></td>
+        <td>
+          <div class="row-actions">
+            <button type="button" class="btn-mini btn-edit" data-action="edit" data-id="${escapeHTML(c.id)}">✏️ تعديل</button>
+            <button type="button" class="btn-mini btn-del" data-action="delete" data-id="${escapeHTML(c.id)}">🗑️ حذف</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function openForm(channel = null) {
+  if (channel) {
+    $("formTitle").textContent = "✏️ تعديل: " + (channel.name || "");
+    setValue("editId", channel.id);
+    setValue("f_name", channel.name);
+    setValue("f_category", channel.category);
+    setValue("f_logo", channel.logo);
+    setValue("f_url", channel.url);
+    setValue("f_order", channel.order || 0);
+    setValue("f_notes", channel.notes);
+  } else {
+    $("formTitle").textContent = "➕ إضافة قناة جديدة";
+    document.querySelector(".modal-body").querySelectorAll("input, textarea").forEach(el => {
+      if (el.type === "hidden") el.value = "";
+      else if (el.id === "f_order") el.value = "0";
+      else el.value = "";
+    });
+  }
+  $("formModal").classList.add("active");
+}
+
+function closeForm() { $("formModal").classList.remove("active"); }
+
+function editChannel(id) {
+  const ch = allChannels.find(x => x.id === id);
+  if (!ch) { toast("❌ غير موجود", true); return; }
+  openForm(ch);
+}
+
+async function saveChannel() {
+  if (!auth.currentUser) { toast("❌ لازم تسجيل دخول", true); return; }
+  const data = {
+    name: value("f_name"),
+    category: value("f_category") || "عام",
+    logo: value("f_logo"),
+    url: value("f_url"),
+    order: Number(value("f_order")) || 0,
+    notes: value("f_notes"),
+    updatedAt: serverTimestamp()
+  };
+  const editId = value("editId");
+  if (!data.name) { toast("⚠️ اسم القناة مطلوب", true); return; }
+  if (!data.url) { toast("⚠️ رابط البث مطلوب", true); return; }
+  if (!validURL(data.url)) { toast("⚠️ رابط البث غير صحيح", true); return; }
+  if (data.logo && !validURL(data.logo)) { toast("⚠️ رابط الشعار غير صحيح", true); return; }
+
+  try {
+    if (editId) {
+      await setDoc(doc(db, "channels", editId), data, { merge: true });
+      toast("✓ تم التعديل");
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db, "channels"), data);
+      toast("✓ تمت الإضافة");
+    }
+    closeForm();
+    await loadChannels();
+  } catch (e) {
+    console.error(e);
+    toast("❌ خطأ في الحفظ: " + e.message, true);
+  }
+}
+
+async function deleteChannel(id) {
+  if (!auth.currentUser) { toast("❌ لازم تسجيل دخول", true); return; }
+  const ch = allChannels.find(x => x.id === id);
+  if (!ch) return;
+  if (!confirm(`⚠️ حذف "${ch.name}"؟`)) return;
+  try {
+    await deleteDoc(doc(db, "channels", id));
+    toast("✓ تم الحذف");
+    await loadChannels();
+  } catch (e) {
+    toast("❌ خطأ في الحذف", true);
+  }
+}
+
+/* Events */
+$("loginBtn")?.addEventListener("click", doLogin);
+$("logoutBtn")?.addEventListener("click", doLogout);
+$("addBtn")?.addEventListener("click", () => openForm());
+$("refreshBtn")?.addEventListener("click", loadChannels);
+$("closeFormBtn")?.addEventListener("click", closeForm);
+$("saveBtn")?.addEventListener("click", saveChannel);
+$("loginPass")?.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+$("adminSearch")?.addEventListener("input", renderTable);
+$("tableBody")?.addEventListener("click", e => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (btn.dataset.action === "edit") editChannel(id);
+  if (btn.dataset.action === "delete") deleteChannel(id);
+});
+$("formModal")?.addEventListener("click", e => { if (e.target === $("formModal")) closeForm(); });
+
+renderStats();
+renderTable();
+</script>
+
+</body>
+</html>
